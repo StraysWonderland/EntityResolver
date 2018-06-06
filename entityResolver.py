@@ -10,7 +10,7 @@ tree = ET.parse('cora-all-id.xml')
 root = tree.getroot()
 
 # threshold for similarity calculation
-threshold = 3
+threshold = 0.35
 
 ########################################################
 def getDiff(attributes_1, attributes_2):
@@ -83,10 +83,14 @@ golden_duplicates = np.unique(golden_duplicates)
 #---------------
 duplicates = [] # list with the publication ids of the duplicates
 for pub in publications:
+for pub_1 in publications:
     list_buffer = [] # collect all duplicates in the local list first
     for i in range(0, len(publications)):
         diff = calculateSimilarity(publications[i], pub)
         if(diff < threshold):
+        pub_2 = publications[i]
+        diff = calculateSimilarity(pub_1, pub_2)
+        if( diff < ( threshold* len(pub_1) ) ):
             list_buffer.append(i) # add the id of the publication to the pairs entry if they are similar
     duplicates.append(list_buffer)
 
