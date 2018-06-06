@@ -13,13 +13,13 @@ root = tree.getroot()
 threshold = 3
 
 ########################################################
-def getDiff(authors1, authors2):
+def getDiff(attributes_1, attributes_2):
     sim = 0
-    for author in authors1:
-        for author_comp in authors2:
-            if(author==author_comp):
+    for att_1 in attributes_1:
+        for att_2 in attributes_2:
+            if(att_1==att_2):
                 sim += 1
-    delta = len(authors1) - sim
+    delta = len(attributes_1) - sim 
     return delta
 ########################################################
 
