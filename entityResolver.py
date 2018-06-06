@@ -44,19 +44,26 @@ list_ids = []       # list with the ids of the publications
 # first loop to store the relevant data into lists
 for child in root:
     list_local_authors = []
+    title = []
     for element in child:
-        title = ""
         if(element.tag == 'author'): # store the author ids into the list
             list_local_authors.append(element.attrib['id']) # collect all authors in a local list first 
         elif(element.tag == 'venue'):
             for ven in element:
                 for item in ven:
                     list_local_authors.append(item.text)
-        else:
-            list_local_authors.append(element.text)
+        elif(element.tag == 'title'):
+            title.append(element.text)
+    if(title != ""):
+        full_title = ''.join(title)
+        list_local_authors.append(full_title)
     list_ids.append(child.attrib['id']) # store the id of the current publication in a list
     publications.append(list_local_authors) # append the list with the collected authors to the publications
 
+
+##############
+# GOLD STANDART
+#--------------
 golden_duplicates = []
 # first loop to store the relevant data into lists
 for child in root:
@@ -67,14 +74,13 @@ for child in root:
             list_local_golden.append(pos)
         pos += 1
     golden_duplicates.append(list_local_golden)
-
 # uniquify golden duplicates
 golden_duplicates = np.unique(golden_duplicates)
 
-print("####List of golden duplicates###")
-for i in range(17):
-    print(golden_duplicates[i])
 
+################
+#FIND DUPLICATES
+#---------------
 duplicates = [] # list with the publication ids of the duplicates
 for pub in publications:
     list_buffer = [] # collect all duplicates in the local list first
@@ -84,28 +90,27 @@ for pub in publications:
             list_buffer.append(i) # add the id of the publication to the pairs entry if they are similar
     duplicates.append(list_buffer)
 
-print("####List of duplicate pairs before###")
-for i in range(17):
-    print(duplicates[i])
-
 # uniquify duplicates
 duplicates = np.unique(duplicates)
 
-print("####List of duplicate pairs after###")
+
+########################################
+# PRINTING
+print("#### gold-standart duplicates ###")
+for i in range(17):
+    print(golden_duplicates[i])
+
+print("#### retrieved duplicates ###")
 for i in range(17):
     print(duplicates[i])
 
-print("#####")
-print("#####")
-print(len(golden_duplicates))
-print("#####")
-print(len(duplicates))
-print("#####")
-print("#####")
+print("#######################################")
+print(str(len(golden_duplicates)) + " #duplicates in gold-standart"  )
+print(str(len(duplicates)) + " #retrieved duplicates " )
+print("#######################################")
 
 # timestamp for termination time
 timestamp_end = time.time() - timestamp_start
-print("#######################################")
 print("Calculation Finished")
 print('Time passed: ' + str(timestamp_end))
 print("#######################################")
