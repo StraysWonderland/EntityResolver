@@ -60,47 +60,43 @@ for child in root:
     list_ids.append(child.attrib['id']) # store the id of the current publication in a list
     publications.append(list_local_authors) # append the list with the collected authors to the publications
 
-
 ##############
 # GOLD STANDART
 #--------------
 golden_duplicates = []
 # first loop to store the relevant data into lists
+pos_comp = 0
 for child in root:
-    list_local_golden = []
     pos = 0
     for child_comp in root:
-        if(child_comp.attrib['id'] == child.attrib['id']):
-            list_local_golden.append(pos)
+        if(child_comp.attrib['id'] == child.attrib['id'] and pos != pos_comp):
+            golden_duplicates.append((pos_comp,pos))
         pos += 1
-    if(len(list_local_golden) > 1 ):
-        golden_duplicates.append(list_local_golden)
+    pos_comp += 1
+    
 # uniquify golden duplicates
-golden_duplicates = np.unique(golden_duplicates)
-
+# golden_duplicates = np.unique(golden_duplicates)
 
 ################
 #FIND DUPLICATES
 #---------------
 duplicates = [] # list with the publication ids of the duplicates
-for pub_1 in publications:
+
+for j in range(0, len(publications)):
     list_buffer = [] # collect all duplicates in the local list first
     for i in range(0, len(publications)):
-        pub_2 = publications[i]
-        diff = calculateSimilarity(pub_1, pub_2)
-        if( diff < ( threshold* len(pub_1) ) ):
-            list_buffer.append(i) # add the id of the publication to the pairs entry if they are similar
-    if(len(list_buffer) > 1 ):
-        duplicates.append(list_buffer)
+        diff = calculateSimilarity(publications[j], publications[i])
+        if( diff < ( threshold* len(publications[j])) and i != j ):
+            duplicates.append((j, i)) # add tuple of pair to evaluation list
 
 # uniquify duplicates
-duplicates = np.unique(duplicates)
+# duplicates = np.unique(duplicates)
 
 
 ########################################
 # PRINTING
 print("#### gold-standart duplicates ###")
-for i in range(17):
+for i in range(17):    
     print(golden_duplicates[i])
 
 print("#### retrieved duplicates ###")
