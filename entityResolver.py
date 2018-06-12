@@ -61,6 +61,7 @@ for child in root:
     publications.append(current_attributes) # append the list with the collected authors to the publications
 
 print("retrieved data entries")
+
 ##############
 # GOLD STANDART
 #--------------
@@ -78,6 +79,7 @@ for child in root:
     pos_comp += 1
     
 print("retrieved golden duplicates")
+
 ################
 #FIND DUPLICATES
 #---------------
@@ -94,13 +96,14 @@ for j in range(0, len(publications)):
 
 
 print("retrieved duplicates")
+
 ###############
 #PRECISION, RECALL & F1 SCORE
 #---------------
 true_positive = 0
 false_positive = 0
 false_negative = 0
-tp = False
+
 for dup in duplicates:
     if(dup in gold_lookup):
         true_positive += 1
