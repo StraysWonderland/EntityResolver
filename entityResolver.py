@@ -92,7 +92,6 @@ for j in range(0, len(publications)):
 # uniquify duplicates
 # duplicates = np.unique(duplicates)
 
-
 ########################################
 # PRINTING
 print("#### gold-standart duplicates ###")
@@ -107,6 +106,37 @@ print("#######################################")
 print(str(len(golden_duplicates)) + " #duplicates in gold-standart"  )
 print(str(len(duplicates)) + " #retrieved duplicates " )
 print("#######################################")
+print("Evaluating..")
+
+###############
+#PRECISION, RECALL & F1 SCORE
+#---------------
+true_positive = 0
+false_positive = 0
+false_negative = 0
+tp = False
+for dup in duplicates:
+    for i in range(len(golden_duplicates)):
+        gold = golden_duplicates[i]
+        if gold == dup:
+            true_positive += 1
+            del golden_duplicates[i]
+            tp = True
+            break
+    if(not tp):
+        false_positive += 1
+for gold in golden_duplicates:
+    if gold not in duplicates:
+        false_negative += 1
+
+precision = true_positive / (true_positive + false_positive)
+recall = true_positive / (true_positive + false_negative)
+f1_score = 2*true_positive / (2*true_positive + false_positive + false_negative)
+
+print("Evaluation")
+print("Precision: " + str(precision))
+print("Recall: " + str(recall))
+print("F1 Score: " + str(f1_score))
 
 # timestamp for termination time
 timestamp_end = time.time() - timestamp_start
