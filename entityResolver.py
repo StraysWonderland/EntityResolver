@@ -65,37 +65,33 @@ print("retrieved data entries")
 # GOLD STANDART
 #--------------
 golden_duplicates = []
+gold_lookup = set()
 # first loop to store the relevant data into lists
 pos_comp = 0
 for child in root:
     pos = 0
     for child_comp in root:
-        if(child_comp.attrib['id'] == child.attrib['id'] and pos != pos_comp):
+        if(child_comp.attrib['id'] == child.attrib['id'] and pos != pos_comp and (pos, pos_comp) not in gold_lookup):
             golden_duplicates.append((pos_comp,pos))
+            gold_lookup.add((pos_comp,pos))
         pos += 1
     pos_comp += 1
     
-# uniquify golden duplicates
-# golden_duplicates = np.unique(golden_duplicates)
-
 print("retrieved golden duplicates")
 ################
 #FIND DUPLICATES
 #---------------
 duplicates = [] # list with the publication ids of the duplicates
+dup_lookup = set()
 
 for j in range(0, len(publications)):
     list_buffer = [] # collect all duplicates in the local list first
     for i in range(0, len(publications)):
         diff = calculateSimilarity(publications[j], publications[i])
-        if( diff < ( threshold* len(publications[j])) and i != j ):
+        if( diff < ( threshold* len(publications[j])) and i != j  and (i, j) not in dup_lookup):
             duplicates.append((j, i)) # add tuple of pair to evaluation list
+            dup_lookup.add((j, i)) # add tuple of pair to evaluation list
 
-# uniquify duplicates
-# duplicates = np.unique(duplicates)
-
-num_gold_duplicates = len(golden_duplicates)
-num_found_duplicates = len(duplicates)
 
 print("retrieved duplicates")
 ###############
@@ -106,16 +102,13 @@ false_positive = 0
 false_negative = 0
 tp = False
 for dup in duplicates:
-    for i in range(len(golden_duplicates)):
-        if golden_duplicates[i] == dup:
-            true_positive += 1
-            del golden_duplicates[i]
-            tp = True
-            break
-    if(not tp):
+    if(dup in gold_lookup):
+        true_positive += 1
+    else:
         false_positive += 1
-for gold in golden_duplicates:
-    if gold not in duplicates:
+
+for gold in gold_lookup:
+    if gold not in dup_lookup:
         false_negative += 1
 
 precision = true_positive / (true_positive + false_positive)
@@ -125,19 +118,21 @@ f1_score = 2*true_positive / (2*true_positive + false_positive + false_negative)
 print("evaluation completed")
 ########################################
 # PRINTING
-print("#### missed gold-standart duplicates ###")
-for i in range(20):    
-    print(golden_duplicates[i])
-
-print("#### retrieved duplicates ###")
-for i in range(20):
-    print(duplicates[i])
+print ('### {0} - {1}'.format("golden standart", "found duplicates"))
+for i in range(200):    
+    print('{:10} - {:>10}'.format(str(golden_duplicates[i]), str(duplicates[i])))
 
 print("#######################################")
+num_gold_duplicates = len(golden_duplicates)
+num_found_duplicates = len(duplicates)
 print(str(num_gold_duplicates) + " #duplicates in gold-standart"  )
 print(str(num_found_duplicates) + " #retrieved duplicates " )
 print("#######################################")
 print("Evaluation")
+print("True positives: " + str(true_positive))
+print("False positives: " + str(false_positive))
+print("false negative: " + str(false_negative))
+print("...")
 print("Precision: " + str(precision))
 print("Recall: " + str(recall))
 print("F1 Score: " + str(f1_score))
