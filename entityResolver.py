@@ -43,23 +43,24 @@ list_ids = []       # list with the ids of the publications
 
 # first loop to store the relevant data into lists
 for child in root:
-    list_local_authors = []
+    current_attributes = []
     title = []
     for element in child:
         if(element.tag == 'author'): # store the author ids into the list
-            list_local_authors.append(element.attrib['id']) # collect all authors in a local list first 
+            current_attributes.append(element.attrib['id']) # collect all authors in a local list first 
         elif(element.tag == 'venue'):
             for ven in element:
                 for item in ven:
-                    list_local_authors.append(item.text)
+                    current_attributes.append(item.text)
         elif(element.tag == 'title'):
             title.append(element.text)
     if(title != ""):
         full_title = ''.join(title)
-        list_local_authors.append(full_title)
+        current_attributes.append(full_title)
     list_ids.append(child.attrib['id']) # store the id of the current publication in a list
-    publications.append(list_local_authors) # append the list with the collected authors to the publications
+    publications.append(current_attributes) # append the list with the collected authors to the publications
 
+print("retrieved data entries")
 ##############
 # GOLD STANDART
 #--------------
@@ -77,6 +78,7 @@ for child in root:
 # uniquify golden duplicates
 # golden_duplicates = np.unique(golden_duplicates)
 
+print("retrieved golden duplicates")
 ################
 #FIND DUPLICATES
 #---------------
@@ -92,22 +94,10 @@ for j in range(0, len(publications)):
 # uniquify duplicates
 # duplicates = np.unique(duplicates)
 
-########################################
-# PRINTING
-print("#### gold-standart duplicates ###")
-for i in range(17):    
-    print(golden_duplicates[i])
+num_gold_duplicates = len(golden_duplicates)
+num_found_duplicates = len(duplicates)
 
-print("#### retrieved duplicates ###")
-for i in range(17):
-    print(duplicates[i])
-
-print("#######################################")
-print(str(len(golden_duplicates)) + " #duplicates in gold-standart"  )
-print(str(len(duplicates)) + " #retrieved duplicates " )
-print("#######################################")
-print("Evaluating..")
-
+print("retrieved duplicates")
 ###############
 #PRECISION, RECALL & F1 SCORE
 #---------------
@@ -117,8 +107,7 @@ false_negative = 0
 tp = False
 for dup in duplicates:
     for i in range(len(golden_duplicates)):
-        gold = golden_duplicates[i]
-        if gold == dup:
+        if golden_duplicates[i] == dup:
             true_positive += 1
             del golden_duplicates[i]
             tp = True
@@ -133,12 +122,26 @@ precision = true_positive / (true_positive + false_positive)
 recall = true_positive / (true_positive + false_negative)
 f1_score = 2*true_positive / (2*true_positive + false_positive + false_negative)
 
+print("evaluation completed")
+########################################
+# PRINTING
+print("#### missed gold-standart duplicates ###")
+for i in range(20):    
+    print(golden_duplicates[i])
+
+print("#### retrieved duplicates ###")
+for i in range(20):
+    print(duplicates[i])
+
+print("#######################################")
+print(str(num_gold_duplicates) + " #duplicates in gold-standart"  )
+print(str(num_found_duplicates) + " #retrieved duplicates " )
+print("#######################################")
 print("Evaluation")
 print("Precision: " + str(precision))
 print("Recall: " + str(recall))
 print("F1 Score: " + str(f1_score))
-
-# timestamp for termination time
+print("#######################################")
 timestamp_end = time.time() - timestamp_start
 print("Calculation Finished")
 print('Time passed: ' + str(timestamp_end))
