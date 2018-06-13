@@ -1,6 +1,17 @@
+
+# coding: utf-8
+
+# In[1]:
+
+
 import xml.etree.ElementTree as ET
 import time
 import numpy as np
+import re
+
+
+# In[2]:
+
 
 # timestamp with start time
 timestamp_start = time.time()
@@ -12,18 +23,28 @@ root = tree.getroot()
 # threshold for similarity calculation
 threshold = 0.35
 
-########################################################
+pattern = re.compile("^\([0-9]{4}\)$")
+    
 def getDiff(attributes_1, attributes_2):
     sim = 0
+    similarity_lookup = set()
+                  
     for att_1 in attributes_1:
         for att_2 in attributes_2:
-            if(att_1==att_2):
-                sim += 1
-    delta = len(attributes_1) - sim 
+            if( isYear(att_1, att_2) and att_1 == att_2):
+               if((att_2,att_1) not in similarity_lookup):
+                    similarity_lookup.add((att_1,att_2))
+                    sim += 1
+                    break
+            elif(att_1==att_2 or att_1 in att_2 ):
+                if((att_2,att_1) not in similarity_lookup):
+                    similarity_lookup.add((att_1,att_2))
+                    sim += 1
+                    break
+                    
+    delta = len(attributes_1) - sim
     return delta
-########################################################
 
-########################################################
 # modified version of hamming distance
 def calculateSimilarity(pub_comp, pub):
     diff = 0
@@ -36,7 +57,15 @@ def calculateSimilarity(pub_comp, pub):
     elif(l_pub_comp == l_pub):
         diff = getDiff(pub_comp, pub)
     return diff
-########################################################
+
+def isYear(att_1, att_2):
+    return bool(pattern.match(att_1)) and bool(pattern.match(att_1))
+
+
+# ### Retrieve publications in datates
+
+# In[3]:
+
 
 publications = []   # list with the author ids for each publication
 list_ids = []       # list with the ids of the publications
@@ -47,7 +76,7 @@ for child in root:
     title = []
     for element in child:
         if(element.tag == 'author'): # store the author ids into the list
-            current_attributes.append(element.attrib['id']) # collect all authors in a local list first 
+            current_attributes.append(element.text) # collect all authors in a local list first 
         elif(element.tag == 'venue'):
             for ven in element:
                 for item in ven:
@@ -60,11 +89,14 @@ for child in root:
     list_ids.append(child.attrib['id']) # store the id of the current publication in a list
     publications.append(current_attributes) # append the list with the collected authors to the publications
 
-print("retrieved data entries")
 
-##############
-# GOLD STANDART
-#--------------
+# ### calculate gold standart
+# Dataset stores duplicates by assigning them the same publication-id
+# iterate over the list and store tupels of duplicates.
+
+# In[4]:
+
+
 golden_duplicates = []
 gold_lookup = set()
 # first loop to store the relevant data into lists
@@ -77,12 +109,14 @@ for child in root:
             gold_lookup.add((pos_comp,pos))
         pos += 1
     pos_comp += 1
-    
-print("retrieved golden duplicates")
 
-################
-#FIND DUPLICATES
-#---------------
+
+# ### calculate duplicates 
+# Iterate over list and compare each attribute to similarity
+
+# In[5]:
+
+
 duplicates = [] # list with the publication ids of the duplicates
 dup_lookup = set()
 
@@ -95,11 +129,11 @@ for j in range(0, len(publications)):
             dup_lookup.add((j, i)) # add tuple of pair to evaluation list
 
 
-print("retrieved duplicates")
+# ### calculate precision, recall and F-score based on gold-standart
 
-###############
-#PRECISION, RECALL & F1 SCORE
-#---------------
+# In[6]:
+
+
 true_positive = 0
 false_positive = 0
 false_negative = 0
@@ -118,13 +152,14 @@ precision = true_positive / (true_positive + false_positive)
 recall = true_positive / (true_positive + false_negative)
 f1_score = 2*true_positive / (2*true_positive + false_positive + false_negative)
 
-print("evaluation completed")
-########################################
-# PRINTING
+
+# In[7]:
+
+
 print ('### {0} - {1}'.format("golden standart", "found duplicates"))
 for i in range(200):    
     print('{:10} - {:>10}'.format(str(golden_duplicates[i]), str(duplicates[i])))
-
+    
 print("#######################################")
 num_gold_duplicates = len(golden_duplicates)
 num_found_duplicates = len(duplicates)
@@ -144,3 +179,4 @@ timestamp_end = time.time() - timestamp_start
 print("Calculation Finished")
 print('Time passed: ' + str(timestamp_end))
 print("#######################################")
+
