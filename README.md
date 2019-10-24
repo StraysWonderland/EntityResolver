@@ -7,6 +7,7 @@ Resolves entities of possible duplicates of publications by comparing authors an
 - 20748 retrieved duplicates 
 ---
 - True positives: 16672
+- True negative: 271103‬
 - False positives: 4076
 - False negative: 55453
 ---
